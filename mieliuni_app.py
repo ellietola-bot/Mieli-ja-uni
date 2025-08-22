@@ -45,15 +45,24 @@ with st.form("entry"):
     with col1:
         paiva = st.date_input("Päivä", value=date.today(), format="DD.MM.YYYY")
         uni = st.slider("Uni (tuntia)", min_value=0.0, max_value=12.0, value=7.5, step=0.5)
-        # Mieliala emojit
-        moods = ["😞", "😕", "😐", "🙂", "🤩"]
-        mieliala = st.select_slider("Mieliala", options=moods, value="😐")
+        # Tyylimuutos: mieliala-napit väljemmäksi
+st.markdown(
+    """
+    <style>
+    div.row-widget.stRadio > div{flex-direction:row; justify-content: space-around;}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
-        # Muunna emoji numeroksi
-        mood_map = {"😞": 1, "😕": 2, "😐": 3, "🙂": 4, "🤩": 5}
-        mieliala_num = mood_map[mieliala]
+        # Mieliala emojit radiopainikkeina
+moods = ["😞", "😕", "😐", "🙂", "🤩"]
+mieliala = st.radio("Mieliala", moods, index=2, horizontal=True)
 
-        # Näytä molemmat ruudulla
+# Muunna emoji numeroksi
+mood_map = {"😞": 1, "😕": 2, "😐": 3, "🙂": 4, "🤩": 5}
+mieliala_num = mood_map[mieliala]
+
 st.write("Valitsit:", mieliala, "→ arvo", mieliala_num)
 
 
@@ -151,6 +160,7 @@ chart_data = chart_data.set_index("Päivä")
 
 # Näytetään kaavio
 st.line_chart(chart_data)
+
 
 
 
