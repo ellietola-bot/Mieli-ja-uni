@@ -69,18 +69,49 @@ with col2:
         submitted = st.form_submit_button("💾 Tallenna")
 
 if submitted:
-    if submitted:
+    # (…kentät…)= st.form_submit_button("💾 Tallenna")
+
     save_row({
         "Päivä": paiva,
         "Uni_h": float(uni),
-        "Mieliala": int(mieliala_num),  # 1–5, emojista muunnettu
+        "Mieliala": int(mieliala_num),  # 1–5
         "Stressi": int(stressi),        # 0–10
         "Huomiot": huomiot.strip(),
     })
     st.success("Tallennettu!")
 
+
 # Näytä kaikki tallennetut rivit
-st.subheader("Kaikki merkinnät")
+st.subheader(f"📈 Uni, Mieliala & Stressi ({month:02d}/{year})")
+recent = filter_month(load_data(), year, month)
+if recent.empty:
+    st.info("Ei merkintöjä valitulle kuukaudelle.")
+else:
+    x = pd.to_datetime(recent["Päivä"])
+    fig, ax1 = plt.subplots(figsize=(8,4))
+
+    # Uni vasen akseli
+    ax1.set_xlabel("Päivä")
+    ax1.set_ylabel("Uni (h)")
+    ax1.plot(x, recent["Uni_h"], marker="o", label="Uni (h)")
+    ax1.set_ylim(0, 12)
+
+    # Oikea akseli: mieliala & stressi
+    ax2 = ax1.twinx()
+    ax2.set_ylabel("Mieliala (1–5) / Stressi (0–10)")
+    ax2.plot(x, recent["Mieliala"]*2, marker="s", label="Mieliala (×2)")  # skaalaa 1–5 → 0–10
+    ax2.plot(x, recent["Stressi"], marker="^", label="Stressi")
+    ax2.set_ylim(0, 10)
+
+    # Yhteinen legenda
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    fig.legend(lines1 + lines2, labels1 + labels2, loc="upper left", bbox_to_anchor=(0.08, 1.0))
+    plt.xticks(rotation=45)
+
+    st.pyplot(fig)
+
+
 st.dataframe(load_data())
 
 # Tarjoa latausmahdollisuus CSV:nä
@@ -178,6 +209,7 @@ else:
 
     # Näytetään viivakaaviona Uni, Mieliala ja Stressi
     st.line_chart(dff.set_index("Päivä")[["Uni_h", "Mieliala", "Stressi"]])
+
 
 
 
