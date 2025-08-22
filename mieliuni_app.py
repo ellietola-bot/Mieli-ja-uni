@@ -64,7 +64,6 @@ if submitted:
     save_row({
         "Päivä": paiva,
         "Uni_h": float(uni),
-        "Mieliala_0_10": int(mieliala),
         "Stressi_0_10": int(stressi),
         "Huomiot": huomiot.strip(),
     })
@@ -150,6 +149,7 @@ chart_data = chart_data.set_index("Päivä")
 
 # Näytetään kaavio
 st.line_chart(chart_data)
+
 
 
 
