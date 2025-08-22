@@ -37,7 +37,7 @@ def filter_month(df, year, month):
               (pd.to_datetime(df["Päivä"]).dt.month == month)].sort_values("Päivä")
 
 # ---------- UI: Syöttölomake ----------
-st.title("😴 Mieli & Uni – oma seuranta")
+st.title("Uni ja mieliala")
 st.caption("Seuraa unta, mielialaa ja stressiä. Data pysyy vain tällä koneella (data.csv).")
 
 with st.form("entry"):
@@ -45,7 +45,16 @@ with st.form("entry"):
     with col1:
         paiva = st.date_input("Päivä", value=date.today(), format="DD.MM.YYYY")
         uni = st.slider("Uni (tuntia)", min_value=0.0, max_value=12.0, value=7.5, step=0.5)
-        mieliala = st.slider("Mieliala (0–10)", 0, 10, 5)
+        moods = ["😞", "😕", "😐", "🙂", "🤩"]
+        mieliala = st.select_slider("Mieliala", options=moods, value="😐")
+
+# Muunna emoji numeroksi
+mood_map = {"😞": 1, "😕": 2, "😐": 3, "🙂": 4, "🤩": 5}
+mieliala_num = mood_map[mieliala]
+
+# Näytä molemmat ruudulla
+st.write("Valitsit:", mieliala, "→ arvo", mieliala_num)
+
     with col2:
         stressi = st.slider("Stressi (0–10)", 0, 10, 5)
         huomiot = st.text_area("Huomiot", placeholder="esim. flunssa, lääkitys, painajaisia…")
@@ -141,5 +150,6 @@ chart_data = chart_data.set_index("Päivä")
 
 # Näytetään kaavio
 st.line_chart(chart_data)
+
 
 
