@@ -8,16 +8,39 @@ DATAFILE = "data.csv"
 
 # Lataa olemassa oleva data (jos tiedosto on jo olemassa)
 def load_data():
-    if os.path.exists(DATAFILE):
-        return pd.read_csv(DATAFILE)
+    if os.path.exists(DATA_PATH):
+        df = pd.read_csv(DATA_PATH)
+
+        # Varmista sarakelista
+        wanted = ["Päivä", "Uni_h", "Mieliala", "Stressi", "Huomiot"]
+        for col in wanted:
+            if col not in df.columns:
+                df[col] = None
+
+        # Muunna vanhat sarakenimet -> uudet
+        # 0–10 asteikko -> 1–5 (pyöristetään lähimpään)
+        if "Mieliala_0_10" in df.columns and df["Mieliala"].isna().all():
+            df["Mieliala"] = (pd.to_numeric(df["Mieliala_0_10"], errors="coerce")/2).round().clip(1,5)
+
+        if "Stressi_0_10" in df.columns and df["Stressi"].isna().all():
+            df["Stressi"] = pd.to_numeric(df["Stressi_0_10"], errors="coerce").clip(0,10)
+
+        # Päivä päivämääräksi
+        df["Päivä"] = pd.to_datetime(df["Päivä"], errors="coerce").dt.date
+
+        # Pidä vain halutut sarakkeet oikeassa järjestyksessä
+        df = df[wanted]
+
+        return df.dropna(subset=["Päivä"])
     else:
         return pd.DataFrame(columns=["Päivä", "Uni_h", "Mieliala", "Stressi", "Huomiot"])
+
 
 # Lisää uusi rivi ja tallenna
 def save_row(row):
     df = load_data()
     df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
-    df.to_csv(DATAFILE, index=False)
+    df.to_csv(DATA_PATH, index=False)
     return df
 
 from datetime import date
@@ -171,13 +194,19 @@ else:
 st.subheader("📈 Mieliala ja stressi ajan mittaan")
 
 # Valitaan vain halutut sarakkeet
-chart_data = data[["Päivä", "Mieliala", "Stressi"]]
+st.subheader("📈 Mieliala ja stressi ajan mittaan")
+df = load_data()
+if df.empty:
+    st.info("Ei vielä dataa kuvaajaan.")
+else:
+    dff = df.copy()
+    dff["Päivä"] = pd.to_datetime(dff["Päivä"])
+    dff = dff.sort_values("Päivä")
 
-# Tehdään Päivä-sarakkeesta index (näyttää nätimmin x-akselilla)
-chart_data = chart_data.set_index("Päivä")
+    # Näytetään viivakaaviona Uni, Mieliala ja Stressi
+    st.line_chart(dff.set_index("Päivä")[["Uni_h", "Mieliala", "Stressi"]])
 
-# Näytetään kaavio
-st.line_chart(chart_data)
+
 
 
 
