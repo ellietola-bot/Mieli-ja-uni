@@ -1,6 +1,25 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
+import os
+
+DATAFILE = "data.csv"
+
+# Lataa olemassa oleva data (jos tiedosto on jo olemassa)
+def load_data():
+    if os.path.exists(DATAFILE):
+        return pd.read_csv(DATAFILE)
+    else:
+        return pd.DataFrame(columns=["Päivä", "Uni_h", "Mieliala", "Stressi", "Huomiot"])
+
+# Lisää uusi rivi ja tallenna
+def save_row(row):
+    df = load_data()
+    df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
+    df.to_csv(DATAFILE, index=False)
+    return df
+
 from datetime import date
 from pathlib import Path
 
@@ -79,6 +98,13 @@ if submitted:
         "Huomiot": huomiot.strip(),
     })
     st.success("Tallennettu!")
+# Näytä kaikki tallennetut rivit
+st.subheader("Kaikki merkinnät")
+st.dataframe(load_data())
+
+# Tarjoa latausmahdollisuus CSV:nä
+csv = load_data().to_csv(index=False).encode("utf-8")
+st.download_button("Lataa CSV", csv, "mieliuni_data.csv", "text/csv")
 
 st.divider()
 
@@ -160,6 +186,7 @@ chart_data = chart_data.set_index("Päivä")
 
 # Näytetään kaavio
 st.line_chart(chart_data)
+
 
 
 
