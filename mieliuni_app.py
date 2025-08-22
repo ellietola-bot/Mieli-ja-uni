@@ -57,7 +57,7 @@ with st.form("entry"):
 st.write("Valitsit:", mieliala, "→ arvo", mieliala_num)
 
 
-    with col2:
+with col2:
         stressi = st.slider("Stressi (0–10)", 0, 10, 5)
         huomiot = st.text_area("Huomiot", placeholder="esim. flunssa, lääkitys, painajaisia…")
         submitted = st.form_submit_button("💾 Tallenna")
@@ -151,6 +151,7 @@ chart_data = chart_data.set_index("Päivä")
 
 # Näytetään kaavio
 st.line_chart(chart_data)
+
 
 
 
