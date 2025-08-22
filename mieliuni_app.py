@@ -76,7 +76,7 @@ if submitted:
         "Uni_h": float(uni),
         "Mieliala": int(mieliala_num),  # 1–5
         "Stressi": int(stressi),        # 0–10
-        "Huomiot": huomiot.strip(),
+        "Huomiot": huomiot.strip()
     })
     st.success("Tallennettu!")
 
@@ -209,6 +209,7 @@ else:
 
     # Näytetään viivakaaviona Uni, Mieliala ja Stressi
     st.line_chart(dff.set_index("Päivä")[["Uni_h", "Mieliala", "Stressi"]])
+
 
 
 
