@@ -45,15 +45,17 @@ with st.form("entry"):
     with col1:
         paiva = st.date_input("Päivä", value=date.today(), format="DD.MM.YYYY")
         uni = st.slider("Uni (tuntia)", min_value=0.0, max_value=12.0, value=7.5, step=0.5)
+        # Mieliala emojit
         moods = ["😞", "😕", "😐", "🙂", "🤩"]
         mieliala = st.select_slider("Mieliala", options=moods, value="😐")
 
-# Muunna emoji numeroksi
+        # Muunna emoji numeroksi
         mood_map = {"😞": 1, "😕": 2, "😐": 3, "🙂": 4, "🤩": 5}
         mieliala_num = mood_map[mieliala]
 
-# Näytä molemmat ruudulla
+        # Näytä molemmat ruudulla
 st.write("Valitsit:", mieliala, "→ arvo", mieliala_num)
+
 
     with col2:
         stressi = st.slider("Stressi (0–10)", 0, 10, 5)
@@ -149,6 +151,7 @@ chart_data = chart_data.set_index("Päivä")
 
 # Näytetään kaavio
 st.line_chart(chart_data)
+
 
 
 
