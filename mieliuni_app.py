@@ -1,74 +1,37 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import pandas as pd
 import os
+from pathlib import Path
 
-DATAFILE = "data.csv"
+# Tiedoston polku
+DATA_PATH = Path("data.csv")
 
-# Lataa olemassa oleva data (jos tiedosto on jo olemassa)
+# Sarakkeet joita halutaan pitää
+COLUMNS = ["Päivä", "Uni_h", "Mieliala", "Stressi", "Huomiot"]
+
 def load_data():
-    if os.path.exists(DATA_PATH):
+    if DATA_PATH.exists():
         df = pd.read_csv(DATA_PATH)
 
-        # Varmista sarakelista
-        wanted = ["Päivä", "Uni_h", "Mieliala", "Stressi", "Huomiot"]
-        for col in wanted:
+        # Lisää puuttuvat sarakkeet
+        for col in COLUMNS:
             if col not in df.columns:
                 df[col] = None
 
-        # Muunna vanhat sarakenimet -> uudet
-        # 0–10 asteikko -> 1–5 (pyöristetään lähimpään)
+        # Muunna vanhat sarakkeet jos löytyy
         if "Mieliala_0_10" in df.columns and df["Mieliala"].isna().all():
             df["Mieliala"] = (pd.to_numeric(df["Mieliala_0_10"], errors="coerce")/2).round().clip(1,5)
 
         if "Stressi_0_10" in df.columns and df["Stressi"].isna().all():
             df["Stressi"] = pd.to_numeric(df["Stressi_0_10"], errors="coerce").clip(0,10)
 
-        # Päivä päivämääräksi
+        # Päivä päivämääräksi ja palautetaan siisti DataFrame
         df["Päivä"] = pd.to_datetime(df["Päivä"], errors="coerce").dt.date
-
-        # Pidä vain halutut sarakkeet oikeassa järjestyksessä
-        df = df[wanted]
-
+        df = df[COLUMNS]
         return df.dropna(subset=["Päivä"])
     else:
-        return pd.DataFrame(columns=["Päivä", "Uni_h", "Mieliala", "Stressi", "Huomiot"])
-
-
-# Lisää uusi rivi ja tallenna
-def save_row(row):
-    df = load_data()
-    df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
-    df.to_csv(DATA_PATH, index=False)
-    return df
-
-from datetime import date
-from pathlib import Path
-
-st.set_page_config(page_title="Mieli & Uni", page_icon="😴", layout="centered")
-
-DATA_PATH = Path("data.csv")
-COLUMNS = ["Päivä","Uni_h","Mieliala_0_10","Stressi_0_10","Huomiot"]
-
-# ---------- Helpers ----------
-def load_data():
-    if DATA_PATH.exists():
-        df = pd.read_csv(DATA_PATH)
-        for col in COLUMNS:
-            if col not in df.columns:
-                df[col] = None
-        df = df[COLUMNS]
-        df["Päivä"] = pd.to_datetime(df["Päivä"]).dt.date
-        return df.dropna(subset=["Päivä"])
-    return pd.DataFrame(columns=COLUMNS)
-
-
-def filter_month(df, year, month):
-    if df.empty:
-        return df
-    return df[(pd.to_datetime(df["Päivä"]).dt.year == year) &
-              (pd.to_datetime(df["Päivä"]).dt.month == month)].sort_values("Päivä")
+        return pd.DataFrame(columns=COLUMNS)
 
 # ---------- UI: Syöttölomake ----------
 st.title("Uni ja mieliala")
@@ -106,13 +69,16 @@ with col2:
         submitted = st.form_submit_button("💾 Tallenna")
 
 if submitted:
+    if submitted:
     save_row({
         "Päivä": paiva,
         "Uni_h": float(uni),
-        "Stressi_0_10": int(stressi),
+        "Mieliala": int(mieliala_num),  # 1–5, emojista muunnettu
+        "Stressi": int(stressi),        # 0–10
         "Huomiot": huomiot.strip(),
     })
     st.success("Tallennettu!")
+
 # Näytä kaikki tallennetut rivit
 st.subheader("Kaikki merkinnät")
 st.dataframe(load_data())
@@ -164,13 +130,20 @@ else:
     plt.title(f"Uni, Mieliala & Stressi ({month:02d}/{year})")
     st.pyplot(fig)
 
-    # Keskiarvot
-    st.subheader("📊 Kuukauden keskiarvot")
-    st.write({
-        "Merkintöjä": len(recent),
-        "Uni (h)": round(recent["Uni_h"].mean(),2),
-        "Mieliala": round(recent["Mieliala_0_10"].mean(),2),
-        "Stressi": round(recent["Stressi_0_10"].mean(),2),
+    df = load_data()
+kuukauden = filter_month(df, year, month)
+
+st.subheader("📊 Kuukauden keskiarvot")
+if kuukauden.empty:
+    st.info("Ei merkintöjä valitulle kuukaudelle.")
+else:
+    st.json({
+        "Merkintöjä": int(len(kuukauden)),
+        "Uni (h)": round(kuukauden["Uni_h"].mean(), 2),
+        "Mieliala": round(kuukauden["Mieliala"].mean(), 2),  # 1–5
+        "Stressi": round(kuukauden["Stressi"].mean(), 2),    # 0–10
+    })
+
     })
 
 # Huomiot
@@ -205,6 +178,7 @@ else:
 
     # Näytetään viivakaaviona Uni, Mieliala ja Stressi
     st.line_chart(dff.set_index("Päivä")[["Uni_h", "Mieliala", "Stressi"]])
+
 
 
 
