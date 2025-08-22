@@ -44,7 +44,7 @@ with st.form("entry"):
     col1, col2 = st.columns(2)
     with col1:
         paiva = st.date_input("Päivä", value=date.today(), format="DD.MM.YYYY")
-        uni = st.number_input("Uni (h)", min_value=0.0, max_value=12.0, step=0.5, value=7.0)
+        uni = st.slider("Uni (tuntia)", min_value=0.0, max_value=12.0, value=7.5, step=0.5)
         mieliala = st.slider("Mieliala (0–10)", 0, 10, 5)
     with col2:
         stressi = st.slider("Stressi (0–10)", 0, 10, 5)
@@ -141,4 +141,5 @@ chart_data = chart_data.set_index("Päivä")
 
 # Näytetään kaavio
 st.line_chart(chart_data)
+
 
