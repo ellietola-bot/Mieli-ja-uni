@@ -49,8 +49,8 @@ with st.form("entry"):
         mieliala = st.select_slider("Mieliala", options=moods, value="😐")
 
 # Muunna emoji numeroksi
-mood_map = {"😞": 1, "😕": 2, "😐": 3, "🙂": 4, "🤩": 5}
-mieliala_num = mood_map[mieliala]
+        mood_map = {"😞": 1, "😕": 2, "😐": 3, "🙂": 4, "🤩": 5}
+        mieliala_num = mood_map[mieliala]
 
 # Näytä molemmat ruudulla
 st.write("Valitsit:", mieliala, "→ arvo", mieliala_num)
@@ -58,7 +58,7 @@ st.write("Valitsit:", mieliala, "→ arvo", mieliala_num)
     with col2:
         stressi = st.slider("Stressi (0–10)", 0, 10, 5)
         huomiot = st.text_area("Huomiot", placeholder="esim. flunssa, lääkitys, painajaisia…")
-    submitted = st.form_submit_button("💾 Tallenna")
+        submitted = st.form_submit_button("💾 Tallenna")
 
 if submitted:
     save_row({
@@ -150,6 +150,7 @@ chart_data = chart_data.set_index("Päivä")
 
 # Näytetään kaavio
 st.line_chart(chart_data)
+
 
 
 
