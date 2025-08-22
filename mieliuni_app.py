@@ -40,14 +40,6 @@ def load_data():
         return df.dropna(subset=["Päivä"])
     return pd.DataFrame(columns=COLUMNS)
 
-def save_row(row):
-    df = load_data()
-    mask = df["Päivä"] == row["Päivä"]
-    if mask.any():
-        df.loc[mask, :] = list(row.values())
-    else:
-        df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
-    df.to_csv(DATA_PATH, index=False)
 
 def filter_month(df, year, month):
     if df.empty:
@@ -186,6 +178,7 @@ chart_data = chart_data.set_index("Päivä")
 
 # Näytetään kaavio
 st.line_chart(chart_data)
+
 
 
 
